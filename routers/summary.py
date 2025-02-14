@@ -1,10 +1,18 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from services.summarizer import generate_summary
+from pydantic import BaseModel
 
 router = APIRouter()
 
-@router.get("/summary/{paper_id}")
-def get_summary(paper_id: str):
-    mock_text = "This is a mock full text of a paper used for summarization."
-    summary = generate_summary(mock_text)
-    return {"paper_id": paper_id, "summary": summary}
+# 请求体格式化
+class Paper(BaseModel):
+    text: str
+
+@router.post("/summarize")
+async def summarize_paper(paper: Paper):
+    try:
+        # 生成摘要
+        summary = generate_summary(paper.text)
+        return {"summary": summary}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
