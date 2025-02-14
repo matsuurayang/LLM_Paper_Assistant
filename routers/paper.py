@@ -1,5 +1,3 @@
-# routers/paper.py
-
 from fastapi import APIRouter, File, UploadFile, HTTPException
 from io import BytesIO
 from services.paper_parser import parse_pdf  # 引入自定义的解析函数
