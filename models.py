@@ -1,16 +1,13 @@
-from transformers import pipeline
+from transformers import T5ForConditionalGeneration, T5Tokenizer
 
-# 加载 T5-Small 作为摘要生成模型
-def load_summarization_model():
-    model_name = "t5-small"
-    summarizer = pipeline("summarization", model=model_name)
-    return summarizer
+# 加载 T5-small 模型和分词器
+model_name = "t5-small"
+tokenizer = T5Tokenizer.from_pretrained(model_name)
+model = T5ForConditionalGeneration.from_pretrained(model_name)
 
-# 加载问答模型
-def load_qa_model():
-    model_name = "deepset/roberta-base-squad2"
-    qa_pipeline = pipeline("question-answering", model=model_name)
-    return qa_pipeline
+# 返回加载的模型和分词器，供其他模块使用
+def get_model():
+    return model
 
-summarizer = load_summarization_model()
-qa_pipeline = load_qa_model()
+def get_tokenizer():
+    return tokenizer
