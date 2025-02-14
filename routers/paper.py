@@ -1,16 +1,25 @@
-from fastapi import APIRouter, UploadFile, File
-from services.paper_parser import extract_text_from_pdf
-import uuid
+from fastapi import APIRouter, File, UploadFile, HTTPException
+from io import StringIO
+from pydantic import BaseModel
+import textract
 
 router = APIRouter()
 
+
+# 用于接收上传的文件和解析内容
+class Paper(BaseModel):
+    text: str
+
+
+# 上传文件并提取文本
 @router.post("/upload")
 async def upload_paper(file: UploadFile = File(...)):
-    paper_id = str(uuid.uuid4())
-    file_path = f"./uploaded_papers/{paper_id}.pdf"
+    try:
+        contents = await file.read()
 
-    with open(file_path, "wb") as f:
-        f.write(await file.read())
+        # 使用 textract 提取文本
+        text = textract.process(docx=contents).decode("utf-8")
 
-    extracted_text = extract_text_from_pdf(file_path)
-    return {"paper_id": paper_id, "status": "processed", "extracted_text": extracted_text[:500]}
+        return {"text": text}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error processing the file: {str(e)}")
