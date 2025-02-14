@@ -1,10 +1,19 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from services.qa_system import answer_question
+from pydantic import BaseModel
 
 router = APIRouter()
 
-@router.post("/qa")
-def ask_question(paper_id: str, question: str):
-    mock_context = "This is a mock full text of a paper used for question answering."
-    answer = answer_question(mock_context, question)
-    return {"paper_id": paper_id, "question": question, "answer": answer}
+# 请求体格式化
+class QuestionRequest(BaseModel):
+    text: str
+    question: str
+
+@router.post("/answer")
+async def answer_question_from_paper(request: QuestionRequest):
+    try:
+        # 生成答案
+        answer = answer_question(request.text, request.question)
+        return {"answer": answer}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
